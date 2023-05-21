@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 using System.Data.Common;
 
 
-namespace FeesService.BLL.Services
+namespace FeesService.BLL.Services.FeeCalculator
 {
     public class FeeSettingsService
     {
@@ -16,7 +16,7 @@ namespace FeesService.BLL.Services
         {
             _calcInputData = calcInputData;
             _dests = dests;
-             DbProviderFactory provider = SqlClientFactory.Instance;
+            DbProviderFactory provider = SqlClientFactory.Instance;
             _feesSettingsRepository = new FeesSettingsRepository(provider);
         }
         public List<FeesSettingsEntity> GetFeesSettingsForDestinations()
@@ -24,21 +24,22 @@ namespace FeesService.BLL.Services
             List<FeesSettingsEntity> schemas = new List<FeesSettingsEntity>();
 
             var groupedDests = _dests.Where(d => d.Blocked == false)
-                                     .GroupBy(e => new { e.SectionId, e.SectionPriority }) 
+                                     .GroupBy(e => new { e.SectionId, e.SectionPriority })
                                      .OrderByDescending(f => f.Key.SectionPriority);
+            IEnumerable<FeesSettingsEntity> fsets;
 
             foreach (var group in groupedDests)
             {
-                foreach (var record in (group.OrderByDescending(g => g.Priority)))
+                foreach (var record in group.OrderByDescending(g => g.Priority))
                 {
-                    schemas.AddRange(_feesSettingsRepository.FindAllByDestination(record.Id)
+                    fsets = _feesSettingsRepository.FindAllByDestination(record.Id);
+                    schemas.AddRange(fsets
                                       .Where(s => s.Currency == _calcInputData.TransactionCurrency &&
-                                                  s.MinAmount >= _calcInputData.TransactionAmount &&
-                                                  s.MaxAmount <= _calcInputData.TransactionAmount &&
-                                                  schemas.FindIndex(m => m.CalcType == s.CalcType) < 0));
+                                                  s.MinAmount <= _calcInputData.TransactionAmount &&
+                                                  s.MaxAmount >= _calcInputData.TransactionAmount )); //&& schemas.FindIndex(m => m.CalcType == s.CalcType) < 0
                 }
             }
-            return schemas;            
-        }        
+            return schemas;
+        }
     }
 }

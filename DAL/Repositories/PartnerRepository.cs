@@ -33,9 +33,12 @@ namespace FeesService.DAL.Repositories
                     ParameterName = "@code",
                     DbType = DbType.String,
                     Value = code
-                };              
+                };
 
-                command.Parameters.Add(codeParam);                
+                command.Parameters.Add(codeParam);
+
+                //Console.WriteLine("Параметры запроса: {0}", getParameters(command));
+                
 
                 cn.Open();
                 using (IDataReader dataReader = ExecuteCommand(command, true))
@@ -47,12 +50,24 @@ namespace FeesService.DAL.Repositories
                             (string)dataReader["code"],
                             (string)dataReader["name"],
                             (int)dataReader["country_id"],
-                            (int)dataReader["state"]);
+                            (int)dataReader["state"],
+                            (int)dataReader["category"]);
                         return partner;
                     }                    
                 }                
             }
             return null;
         }
+        //private string getParameters(IDbCommand command)
+        //{
+        //    var builder = new StringBuilder();
+        //    foreach (IDbDataParameter parametr in command.Parameters)
+        //    { 
+        //       builder.Append(parametr.ParameterName);
+        //       builder.Append('=');
+        //       builder.Append(parametr.Value);
+        //    }
+        //    return builder.ToString();
+        //}
     }
 }

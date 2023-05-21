@@ -3,37 +3,87 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FeesService.BLL.Services;
 using FeesService.BLL.Models;
+using FeesService.BLL.Services.FeeCalculator;
+using static FeesService.BLL.Models.CalcInputData;
 
 namespace FeesService.PLL.Views;
 
 public class MainView
 {
-    private FeeCalculator _feeCalculator;
-    public MainView(FeeCalculator feeCalculator)
-    {
-        _feeCalculator = feeCalculator;
-    }
-
+    private CalcInputData _inputData = new();
     public void Show()
-    {   //добавить зацикливвание при неправильном вводе!
-        Console.WriteLine("Welcome to the Fee Service. To calculate fees answer the following questions.");
-        
+    {   
+        Console.WriteLine("Welcome to the Fee Service. To calculate fees please answer the following questions.");
+
+        GetSenderPartner();
+        GetReceiverPartner();
+        GetTransactionCurrency();
+        GetTransactionAmount();
+
+        new FeeService(_inputData).GetFees();
+    }
+    private void GetSenderPartner()
+    {
         Console.WriteLine("Enter sending partner code");
-        string? sendingPartner = Console.ReadLine();
-        
+        try
+        {
+            _inputData.SendingPartner = new PartnerInputData
+            {
+                type = PartnerType.Sending,
+                partnerCode = Console.ReadLine()!
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            GetSenderPartner();
+        }
+    }
+    private void GetReceiverPartner()
+    {
         Console.WriteLine("Enter receiving partner code");
-        string? receivingPartner = Console.ReadLine();
-        
+        try
+        {
+            _inputData.ReceivingPartner = new PartnerInputData
+            {
+                type = PartnerType.Receiving,
+                partnerCode = Console.ReadLine()!
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            GetReceiverPartner();
+        }
+    }
+    private void GetTransactionCurrency()
+    {
         Console.WriteLine("Enter transaction currency (choose the one from the list): \"RUR\", \"USD\", \"EUR\"");
-        string input = Console.ReadLine()?.ToUpper() ?? Currency.Undefined.ToString();
-        ushort transactionCurrency = 
-        (Enum.TryParse(input, out Currency inputCurr)) ? (ushort) inputCurr : (ushort) Currency.Undefined;
-
+        try
+        {
+            string input = Console.ReadLine()?.ToUpper() ?? Currency.Undefined.ToString();
+            _inputData.TransactionCurrency =
+            (Enum.TryParse(input, out Currency inputCurr)) ? (ushort)inputCurr : (ushort)Currency.Undefined;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            GetTransactionCurrency();
+        }
+    }
+    private void GetTransactionAmount()
+    {
         Console.WriteLine("Enter transaction amount");
-        decimal transactionAmount = Convert.ToDecimal(Console.ReadLine());
-
-        new CalcInputData(sendingPartner, receivingPartner, transactionCurrency, transactionAmount);
-    }    
+        try
+        {
+            _inputData.TransactionAmount = Convert.ToDecimal(Console.ReadLine());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            GetTransactionAmount();
+        }
+    }
+    
 }

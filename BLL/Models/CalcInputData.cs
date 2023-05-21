@@ -35,7 +35,7 @@ public record CalcInputData
         get => _transactionAmount;
         set
         {
-            if (value < 0) throw new Exception("Transaction amount should be a positive integer");
+            if (value <= 0) throw new Exception("Transaction amount should be a positive integer");
             _transactionAmount = value;           
         }
     }
@@ -44,9 +44,9 @@ public record CalcInputData
         get => _sendingPartner;
         set
         {
-            ArgumentNullException.ThrowIfNull(value, "Sending partner is null");
+            ArgumentNullException.ThrowIfNull(value, "Sending partner is null");  
             if (value.partnerCode.Length != 4) throw new Exception("Partner code should consist of 4 letters"); //добавь проверку, что это именно буквы
-            _sendingPartner = value;          
+            _sendingPartner = value;
         }
     }
     public PartnerInputData? ReceivingPartner
@@ -59,12 +59,6 @@ public record CalcInputData
             _receivingPartner = value;
         }
     }     
-    
-    public CalcInputData(string? sendingPartner, string? receivingPartner, ushort currency, decimal amount)
-    {
-        SendingPartner = new PartnerInputData { type = PartnerType.Sending, partnerCode = sendingPartner! };
-        ReceivingPartner = new PartnerInputData { type = PartnerType.Receiving, partnerCode = receivingPartner! };
-        TransactionCurrency = currency;
-        TransactionAmount = amount;      
-    }
+    public CalcInputData() { }
+
 }

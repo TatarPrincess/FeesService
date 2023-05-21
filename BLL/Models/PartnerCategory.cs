@@ -4,9 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FeesService.BLL.Services;
+namespace FeesService.BLL.Models;
 
-public class TransactionAmountBasedAlgorythm : CalculationAlgorithm
+public enum PartnerCategory
 {
-
+    SmallEquity = 2,
+    MediumEquity = 4,
+    LargeEquity = 8
 }
