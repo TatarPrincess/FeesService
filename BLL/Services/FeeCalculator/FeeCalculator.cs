@@ -29,9 +29,20 @@ public class FeeCalculator
         {            
             foreach (FeesSettingsEntity schema in feesSettings)
             {
-               schemas.Add(schema.FeesType, new FeeData(schema.Id, schema.DestId, schema.Currency, schema.CalcType,
-                                        schema.MinAmount, schema.MaxAmount, schema.FeesType, schema.Percent,
-                                        schema.FixFees, schema.ExtId, schema.RowGuid, schema.Percent0, 0));
+               schemas.Add(schema.FeesType, 
+                           new FeeData(schema.Id, 
+                                       schema.DestId, 
+                                       schema.Currency, 
+                                       schema.CalcType,
+                                       schema.MinAmount, 
+                                       schema.MaxAmount, 
+                                       schema.FeesType, 
+                                       schema.Percent,
+                                       schema.FixFees, 
+                                       schema.ExtId, 
+                                       schema.RowGuid, 
+                                       schema.Percent0, 
+                                       0));
             }
         }
 

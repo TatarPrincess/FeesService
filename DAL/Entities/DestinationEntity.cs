@@ -17,23 +17,6 @@ public class DestinationEntity
     public int ToType { get; init; }
     public int ToId { get; init; }
     public bool Blocked { get; init; }
-    public int SectionPriority { get; init; }
-
-    public DestinationEntity(int id, int sectionId, 
-                             long currency, int priority, 
-                             int fromType,  int fromId, 
-                             int toType, int toId, 
-                             bool blocked, int sectionPriority)
-    {
-        Id = id;
-        SectionId = sectionId;
-        Currency = currency;
-        Priority = priority;
-        FromType = fromType;
-        FromId = fromId;
-        ToType = toType;
-        ToId = toId;
-        Blocked = blocked;
-        SectionPriority = sectionPriority;
-    }
+    public int SectionPriority { get; init; }    
+    public DestinationEntity() { }  
 }

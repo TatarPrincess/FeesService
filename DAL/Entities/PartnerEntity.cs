@@ -15,15 +15,6 @@ public class PartnerEntity
     public int State { get; set; } = -1;
     public int Category { get; set; } = -1;
 
-    public PartnerEntity(int id, string code, string name, int countryId, int state,  int category)
-    {
-        Id = id;
-        Code = code;
-        Name = name;
-        CountryId = countryId;
-        State = state;        
-        Category = category;
-    }
     public PartnerEntity() { }
 }
 

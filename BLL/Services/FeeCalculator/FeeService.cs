@@ -32,7 +32,10 @@ public class FeeService
             if (fees is not null)
             {
                 foreach (KeyValuePair <int, FeeData> fee in fees)
-                    Console.WriteLine("Fee type: {0} - {1} {2} ", (FeesType)fee.Value.FeesType, fee.Value.Amount, (Currency)fee.Value.Currency);
+                    Console.WriteLine("Fee type: {0} - {1} {2} ", 
+                                     (FeesType)fee.Value.FeesType, 
+                                     fee.Value.Amount, 
+                                     (Currency)fee.Value.Currency);
             }
         }
         else Console.WriteLine("No relevant fee settings is found. Try to change input parameters");

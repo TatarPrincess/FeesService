@@ -19,24 +19,8 @@ namespace FeesService.DAL.Entities
         public decimal FixFees { get; init; }
         public int ExtId { get; init; }
         public Guid RowGuid { get; init; }
-        public decimal Percent0 { get; init; }
-
-        public FeesSettingsEntity(int id, int destId, int currency, int calcType, decimal minAmount, decimal maxAmount,
-            int feesType, decimal percent, decimal fixFees, int extId, Guid rowGuid, decimal percent0)
-        {
-            Id = id;
-            DestId = destId;    
-            Currency = currency;
-            CalcType  = calcType;
-            MinAmount = minAmount;
-            MaxAmount = maxAmount;
-            FeesType = feesType;
-            Percent = percent;
-            FixFees = fixFees;
-            ExtId = extId;
-            RowGuid = rowGuid;
-            Percent0 = percent0;
-        }
+        public decimal Percent0 { get; init; }        
+        public FeesSettingsEntity() { }
 
     }
 }

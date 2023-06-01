@@ -1,4 +1,5 @@
-﻿using FeesService.DAL.Entities;
+﻿using Dapper;
+using FeesService.DAL.Entities;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -17,47 +18,26 @@ public class FeesSettingsRepository : BaseRepository, IFeesSettings
     public IEnumerable<FeesSettingsEntity> FindAllByDestination(int destinationId)
     {
         string commandText =
-          @"select f.*
-                from[dbo].[FEES_SETTINGS] f (nolock)
-                where f.dest_id = @destinationId";
-
-
-        using (cn = CreateConnection())
-        {
-            IDbCommand command = CreateCommand(commandText, cn);
-
-            SqlParameter destIdParam = new SqlParameter();
-            destIdParam.ParameterName = "@destinationId";
-            destIdParam.DbType = DbType.Int32;
-            destIdParam.Value = destinationId;
-
-            command.Parameters.Add(destIdParam);
-
-
-            cn.Open();
-            using (IDataReader dataReader = ExecuteCommand(command))
+          $@"select f.id as {nameof(FeesSettingsEntity.Id)}, 
+                    f.dest_id as {nameof(FeesSettingsEntity.DestId)},
+                    f.currency as {nameof(FeesSettingsEntity.Currency)},
+                    f.calc_type as {nameof(FeesSettingsEntity.CalcType)},
+                    f.min_amount as {nameof(FeesSettingsEntity.MinAmount)},
+                    f.max_amount as {nameof(FeesSettingsEntity.MaxAmount)},
+                    f.fees_type as {nameof(FeesSettingsEntity.FeesType)},
+                    f.prcnt as [{nameof(FeesSettingsEntity.Percent)}],
+                    f.fix_fees as {nameof(FeesSettingsEntity.FixFees)},
+                    f.ext_id as {nameof(FeesSettingsEntity.ExtId)},
+                    f.rowguid as {nameof(FeesSettingsEntity.RowGuid)},
+                    f.prcnt0 as {nameof(FeesSettingsEntity.Percent0)}
+            from [dbo].[FEES_SETTINGS] f (nolock)
+            where f.dest_id = @destinationId";
+       
+            using (cn = CreateConnection())
             {
-                List<FeesSettingsEntity> feesSettings = new List<FeesSettingsEntity>();
-                while (dataReader.Read())
-                {
-                    FeesSettingsEntity entity = new FeesSettingsEntity(
-                        (int)dataReader["id"],
-                        (int)dataReader["dest_id"],
-                        (int)dataReader["currency"],
-                        (int)dataReader["calc_type"],
-                        (decimal)dataReader["min_amount"],
-                        (decimal)dataReader["max_amount"],
-                        (int)dataReader["fees_type"],
-                        (decimal)dataReader["prcnt"],
-                        (decimal)dataReader["fix_fees"],
-                        (int)dataReader["ext_id"],
-                        (Guid)dataReader["rowguid"],
-                        (decimal)dataReader["prcnt0"]);
-
-                    feesSettings.Add(entity);
-                }
+                cn.Open();
+                List<FeesSettingsEntity> feesSettings = cn.Query<FeesSettingsEntity>(commandText, new { destinationId }).ToList();
                 return feesSettings;
-            }
-        }
+            }         
     }
 }

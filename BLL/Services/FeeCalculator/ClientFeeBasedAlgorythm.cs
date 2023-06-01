@@ -23,7 +23,8 @@ namespace FeesService.BLL.Services.FeeCalculator
             if (clientFeeAmount > 0)
             {
                 clientFeeAmount = Math.Round(inputData.TransactionAmount / 100 * feeData[clientFeeKey].Percent,
-                                       2, MidpointRounding.AwayFromZero);
+                                       2, 
+                                       MidpointRounding.AwayFromZero);
                 feeData[clientFeeKey].Amount = clientFeeAmount;
 
                 foreach (KeyValuePair <int, FeeData> fe in feeData.Where(f => f.Value.FeesType != clientFeeKey))
@@ -32,17 +33,23 @@ namespace FeesService.BLL.Services.FeeCalculator
                     {
                         case (int)CalcType.PercentageOfTransactionAmount:
                             {
-                                fe.Value.Amount = Math.Round(inputData.TransactionAmount / 100 * fe.Value.Percent, 2, MidpointRounding.AwayFromZero);                           
+                                fe.Value.Amount = Math.Round(inputData.TransactionAmount / 100 * fe.Value.Percent, 
+                                                             2, 
+                                                             MidpointRounding.AwayFromZero);                           
                                 break;
                             }
                         case (int)CalcType.PercentageOfClientFee:
                             {
-                                fe.Value.Amount = Math.Round(clientFeeAmount / 100 * fe.Value.Percent0, 2, MidpointRounding.AwayFromZero);
+                                fe.Value.Amount = Math.Round(clientFeeAmount / 100 * fe.Value.Percent0, 
+                                                             2, 
+                                                             MidpointRounding.AwayFromZero);
                                 break;
                             }
                         case (int)CalcType.Combined:
                             {
-                                feeAmount = Math.Round(inputData.TransactionAmount / 100 * fe.Value.Percent, 2, MidpointRounding.AwayFromZero);
+                                feeAmount = Math.Round(inputData.TransactionAmount / 100 * fe.Value.Percent, 
+                                                       2, 
+                                                       MidpointRounding.AwayFromZero);
                                 fe.Value.Amount = Math.Min(feeAmount, clientFeeAmount);
                                 break;
                             }
@@ -66,7 +73,8 @@ namespace FeesService.BLL.Services.FeeCalculator
         {
             FeeData SendingPartnerFee;
             FeeData FeeToDebitSendingPartner;
-            if (feesSet.TryGetValue((int)FeesType.SendingPartnerFee, out SendingPartnerFee!) && SendingPartnerFee!.CalcType == (int)CalcType.Combined)
+            if (feesSet.TryGetValue((int)FeesType.SendingPartnerFee, out SendingPartnerFee!) && 
+                SendingPartnerFee!.CalcType == (int)CalcType.Combined)
             {
                 if (feesSet.TryGetValue((int)FeesType.FeeToDebitSendingPartner, out FeeToDebitSendingPartner!))
                 {

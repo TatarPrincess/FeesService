@@ -13,14 +13,6 @@ namespace FeesService.DAL.Entities
         public int Currency { get; init; } 
         public bool IsSending { get; init; } 
         public bool IsReceiving { get; init; }
-
-        public PartnerCurrencyEntity(int id, int partner, int currency, bool isSending, bool isReceiving)
-        {
-            Id = id;
-            Partner = partner;
-            Currency = currency;
-            IsSending = isSending;
-            IsReceiving = isReceiving;
-        }
+        public PartnerCurrencyEntity() { }
     }
 }

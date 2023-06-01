@@ -1,4 +1,5 @@
-﻿using FeesService.DAL.Entities;
+﻿using Dapper;
+using FeesService.DAL.Entities;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -18,41 +19,19 @@ namespace FeesService.DAL.Repositories
             if (partner <= 0) return null;
 
             string commandText =
-            @"select * 
+            $@"select id as {nameof(PartnerCurrencyEntity.Id)}, 
+                     partner as {nameof(PartnerCurrencyEntity.Partner)},
+                     currency as {nameof(PartnerCurrencyEntity.Currency)},
+                     is_sending as {nameof(PartnerCurrencyEntity.IsSending)},
+                     is_receiving as {nameof(PartnerCurrencyEntity.IsReceiving)}
               from[dbo].[partner_currency] (nolock)
               where partner = @partner";
 
-
             using (cn = CreateConnection())
             {
-                IDbCommand command = CreateCommand(commandText, cn);
-
-                SqlParameter codeParam = new()
-                {
-                    ParameterName = "@partner",
-                    DbType = DbType.String,
-                    Value = partner
-                };
-
-                command.Parameters.Add(codeParam);
-
                 cn.Open();
-                using (IDataReader dataReader = ExecuteCommand(command, true))
-                {
-                    List<PartnerCurrencyEntity> partnercurrencies = new List<PartnerCurrencyEntity>();
-                    while (dataReader.Read())
-                    {
-                        PartnerCurrencyEntity partnerCurrency = new PartnerCurrencyEntity(
-                            (int)dataReader["id"],
-                            (int)dataReader["partner"],
-                            (int)dataReader["currency"],
-                            (bool)dataReader["is_sending"],
-                            (bool)dataReader["is_receiving"]);
-                        
-                        partnercurrencies.Add(partnerCurrency);
-                    }
-                    return partnercurrencies;
-                }
+                List<PartnerCurrencyEntity> partnercurrencies = cn.Query<PartnerCurrencyEntity>(commandText, new { partner }).ToList();
+                return partnercurrencies;
             }
         }
     }
