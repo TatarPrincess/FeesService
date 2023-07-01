@@ -28,7 +28,8 @@ namespace FeesService_Root
 
             IFeesSettingsRepository feesSettingsRepository = new FeesSettingsRepository(provider);
             FeeSettingsService feeSettingsService = new (destinationService, calcInputData, feesSettingsRepository);
-            FeeCalculator feeCalculator = new (calcInputData, feeSettingsService, partnerService);
+            FeeAlgorithmFactory feeAlgorithmFactory = new ();
+            FeeCalculator feeCalculator = new (calcInputData, feeSettingsService, partnerService, feeAlgorithmFactory);
 
             return new FeeService(destinationService, validationService, feeCalculator);
         }       

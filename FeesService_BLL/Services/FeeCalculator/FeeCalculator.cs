@@ -10,13 +10,16 @@ public class FeeCalculator
     private readonly FeeSettingsService _feeSettingsService;
     private readonly CalcInputData _calcInputData;
     private readonly PartnerService _partnerService;
+    private readonly FeeAlgorithmFactory _feeAlgorithmFactory;
     public FeeCalculator(CalcInputData calcInputData,
-                         FeeSettingsService feeSettingsService,  //need a seam here?
-                         PartnerService partnerService)
+                         FeeSettingsService feeSettingsService,  
+                         PartnerService partnerService,
+                         FeeAlgorithmFactory feeAlgorithmFactory)
     {
         _feeSettingsService = feeSettingsService;
         _calcInputData = calcInputData;
         _partnerService = partnerService;
+        _feeAlgorithmFactory = feeAlgorithmFactory;
     }
     public Dictionary<int, FeeData> GetFees()
     {
@@ -54,8 +57,8 @@ public class FeeCalculator
         
         return (sendingPartner.Category == (int)PartnerCategory.LargeEquity ||
                 receivingPartner.Category == (int)PartnerCategory.LargeEquity) 
-                ? new TransactionAmountBasedAlgorythm(schemas, _calcInputData)
-                : new ClientFeeBasedAlgorythm(schemas, _calcInputData);       
+                ? _feeAlgorithmFactory.GetTransactionAmountBasedAlgorythm(schemas, _calcInputData)
+                : _feeAlgorithmFactory.GetClientFeeBasedAlgorythm(schemas, _calcInputData);       
     }
 }
 
