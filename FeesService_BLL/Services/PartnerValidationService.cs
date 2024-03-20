@@ -1,67 +1,94 @@
 ﻿using FeesService_BLL.Models;
 using FeesService_BLL.Models.Partner;
+using FeesService_BLL.Services.Interfaces;
 
 namespace FeesService_BLL.Services
 {
-    public class PartnerValidationService : IValidator
+    public class PartnerValidationService
     {
         private readonly CalcInputData _calcInputData;
-        private readonly PartnerService _partnerService;
-        
+        private readonly IPartnerService _partnerService;
+        private readonly IValidationService _validationService;
+
         public PartnerValidationService(CalcInputData calcInputData,
-                                        PartnerService partnerService)
+                                        IPartnerService partnerService,
+                                        IValidationService validationService)
         {
-            if (calcInputData != null)
-            {
-                _calcInputData = calcInputData;
-            }
-            else throw new Exception();
-            _partnerService = partnerService; 
+            if (calcInputData is null) throw new NullReferenceException("No calcInputData is passed");
+            if (partnerService is null) throw new NullReferenceException("No partnerService is passed");
+
+            _partnerService = partnerService;
+            _calcInputData = calcInputData;
+            _validationService = validationService;
+
+            ((ValidationService)_validationService).FeeDestinationsRetrieved += CheckSendingPartnerState;
+            ((ValidationService)_validationService).FeeDestinationsRetrieved += CheckReceivingPartnerState;
+            ((ValidationService)_validationService).FeeDestinationsRetrieved += CheckSendingPartnerCurrency;
+            ((ValidationService)_validationService).FeeDestinationsRetrieved += CheckReceivingPartnerCurrency;
         }
 
-        private bool CheckPartnerState(PartnerType type)
+        private void CheckState(int partnerState, PartnerType type)
         {
-            int partnerState;
-            switch (type)
-            {
-                case PartnerType.Sending:
-                {
-                  partnerState = _partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).State;
-                  break;
-                }
-                case PartnerType.Receiving:
-                {
-                  partnerState = _partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).State;
-                  break;
-                }
-                default: partnerState = 0; break;
-            }
-            return (partnerState == 1) ? true : throw new Exception($"{type} partner's state should be \"Working\""); 
+            if (partnerState != 1) throw new Exception($"{type} partner's state should be \"Working\"");
         }
-        private bool CheckPartnerCurrency(PartnerType type)
+
+        private void CheckSendingPartnerState(object? sender, EventArgs e)
         {
-            int partnerId = 0;
-            switch (type)
+            try
             {
-                case PartnerType.Sending: 
-                    partnerId = _partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).Id;
-                    break;
-                case PartnerType.Receiving:
-                    partnerId = _partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).Id;
-                    break;
+                CheckState(_partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).State,
+                            PartnerType.Sending);
             }
-            List<int>? currencies = _partnerService.GetPartnerCurrency(partnerId, type);
-            return (currencies != null) 
-                   ? currencies.Contains(_calcInputData.TransactionCurrency) 
-                   : throw new Exception($"The list of {type} partner's currencies should contain transfer currecny");            
+            finally
+            {
+                ((ValidationService)_validationService).FeeDestinationsRetrieved -= CheckSendingPartnerState;
+            }                      
         }
-        public bool Check()
+
+        private void CheckReceivingPartnerState(object? sender, EventArgs e)
         {
-            return
-            CheckPartnerState(PartnerType.Sending) &&
-            CheckPartnerState(PartnerType.Receiving) &&
-            CheckPartnerCurrency(PartnerType.Sending) &&
-            CheckPartnerCurrency(PartnerType.Receiving);
+            try 
+            {
+                CheckState(_partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).State,
+                                PartnerType.Receiving);
+            }
+            finally 
+            {
+                ((ValidationService)_validationService).FeeDestinationsRetrieved -= CheckReceivingPartnerState;
+            }
+        }
+
+        private void CheckCurrency(List<PartnerCurrency>? currency, PartnerType type)
+        {
+                if (currency != null && !(currency.Select(p => p.Currency).Contains(_calcInputData.TransactionCurrency)))
+                    throw new Exception($"The list of {type} partner's currencies should contain transfer currency");
+        }
+
+        private void CheckSendingPartnerCurrency(object? sender, EventArgs e)
+        {
+            try 
+            {
+                CheckCurrency(_partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).PartnerCurrency,
+                            PartnerType.Sending);
+            }
+            finally
+            {
+                ((ValidationService)_validationService).FeeDestinationsRetrieved -= CheckSendingPartnerCurrency;
+            }
+            
+        }
+            
+        private void CheckReceivingPartnerCurrency(object? sender, EventArgs e)
+        {
+            try 
+            {
+                CheckCurrency(_partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).PartnerCurrency,
+                            PartnerType.Receiving);
+            }
+            finally 
+            {
+                ((ValidationService)_validationService).FeeDestinationsRetrieved -= CheckReceivingPartnerCurrency;
+            }       
         }
     }
 }

@@ -5,22 +5,21 @@ namespace FeesService_BLL.Services.FeeCalculator;
 
 public class TransactionAmountBasedAlgorythm : CalculationAlgorithm
 {
-    public TransactionAmountBasedAlgorythm(Dictionary<int, FeeData> schemas, CalcInputData inputData)
-           : base(schemas, inputData) { }
-    public override Dictionary<int, FeeData> Execute()
+    public TransactionAmountBasedAlgorythm() { }
+    public override Dictionary<int, FeeData> Execute(Dictionary<int, FeeData> schemas, CalcInputData inputData)
     {
         decimal feeAmount;
 
-        foreach (KeyValuePair <int, FeeData> fe in ProcessFeesSettings(schemas))
+        foreach (KeyValuePair <int, FeeData> fe in ProcessFeesSettings(schemas, inputData))
         {
             feeAmount = Math.Round(inputData.TransactionAmount / 100 * fe.Value.Percent + fe.Value.FixFees, 
                              2, 
                              MidpointRounding.AwayFromZero);
             fe.Value.Amount = feeAmount;
         }
-        return ProcessFeesSet(schemas);
+        return ProcessFeesSet(schemas, inputData);
     }
-    protected override Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet)
+    protected override Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet, CalcInputData inputData)
     {
         decimal feeAmount = 0;
         int clientFeeKey = (int)FeesType.ClientFee;
@@ -45,6 +44,6 @@ public class TransactionAmountBasedAlgorythm : CalculationAlgorithm
                         0, 
                         feeAmount));      
 
-        return base.ProcessFeesSet(feesSet);
+        return base.ProcessFeesSet(feesSet, inputData);
     }
 }

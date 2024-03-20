@@ -1,35 +1,41 @@
 ﻿using FeesService_BLL.Models;
 using FeesService_BLL.IRepositories;
+using FeesService_BLL.Services.Interfaces;
 
 namespace FeesService_BLL.Services
 {
-    public class DestinationService
+    public class DestinationService : IDestinationService
     {
+        public readonly CalcInputData _calcInputData;
+        public readonly IPartnerService _partnerService;
         private readonly IDestinationRepository _destinationRepository;
-        public  readonly CalcInputData _calcInputData;
-        public readonly PartnerService _partnerService;
-        private readonly IEnumerable<Destination>? _dests;
+        private IEnumerable<Destination>? _dests = null;
 
-        public IEnumerable<Destination> Dests => _dests;
         public DestinationService(CalcInputData calcInputData,
                                   IDestinationRepository destinationRepository,
-                                  PartnerService partnerService)
+                                  IPartnerService partnerService)
         {
+            if (calcInputData is null) throw new NullReferenceException("No calcInputData is passed");
+            if (destinationRepository is null) throw new NullReferenceException("No destinationRepository is passed");
+            if (partnerService is null) throw new NullReferenceException("No partnerService is passed");
+
             _destinationRepository = destinationRepository;
             _calcInputData = calcInputData;
             _partnerService = partnerService;
-            _dests = GetRelevantDestinations();
-
         }
 
-        private IEnumerable<Destination>? GetRelevantDestinations()
+        public IEnumerable<Destination> GetDestinations()
         {
-            int senderId = _partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).Id;
-            int receiverId = _partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).Id;
+            if (_dests is null)
+            {
+                int senderId = _partnerService.GetPartnerData(_calcInputData.SendingPartner!.partnerCode).Id;
+                int receiverId = _partnerService.GetPartnerData(_calcInputData.ReceivingPartner!.partnerCode).Id;
 
-            List<Destination>? dests = (List<Destination>?)_destinationRepository
-                                            .FindAllBySenderAndReceiver(senderId, receiverId);
-            return dests;         
+                List<Destination>? dests = (List<Destination>?)_destinationRepository
+                                                .FindAllBySenderAndReceiver(senderId, receiverId);
+                _dests = dests;
+            }
+            return _dests;
         }
     }
 }

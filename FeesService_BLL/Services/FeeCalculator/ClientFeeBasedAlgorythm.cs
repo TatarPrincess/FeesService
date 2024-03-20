@@ -5,14 +5,15 @@ namespace FeesService_BLL.Services.FeeCalculator
 {
     public class ClientFeeBasedAlgorythm : CalculationAlgorithm
     {
-        public ClientFeeBasedAlgorythm(Dictionary<int, FeeData> schemas, CalcInputData inputData)
-               : base(schemas, inputData) { }
-        public override Dictionary<int, FeeData> Execute()
+        public ClientFeeBasedAlgorythm() { }
+        public override Dictionary<int, FeeData> Execute(Dictionary<int, FeeData> schemas, CalcInputData inputData)
         {
             decimal feeAmount;
-            Dictionary<int, FeeData> feeData = ProcessFeesSettings(schemas);
+            Dictionary<int, FeeData> feeData = ProcessFeesSettings(schemas, inputData);
             int clientFeeKey = (int)FeesType.ClientFee;
-            decimal clientFeeAmount = feeData[clientFeeKey].Amount;
+
+            decimal clientFeeAmount = 0;
+            if (feeData.ContainsKey(clientFeeKey)) clientFeeAmount = feeData[clientFeeKey].Amount;
 
             if (clientFeeAmount > 0)
             {
@@ -49,21 +50,21 @@ namespace FeesService_BLL.Services.FeeCalculator
                             }
                     }
                 }
-                return this.ProcessFeesSet(feeData);
+                return this.ProcessFeesSet(feeData, inputData);
             }
             else throw new Exception("No client fee setting is found");
         }
 
-        protected override Dictionary<int, FeeData> ProcessFeesSettings(Dictionary<int, FeeData> schemas)
+        protected override Dictionary<int, FeeData> ProcessFeesSettings(Dictionary<int, FeeData> schemas, CalcInputData inputData)
         {
-            base.ProcessFeesSettings(schemas);
+            base.ProcessFeesSettings(schemas, inputData);
             if (schemas.TryGetValue((int)FeesType.ClientFee, out _) &&
                 schemas[(int)FeesType.SendingPartnerFee].CalcType == (int)CalcType.Combined)
                 schemas.Remove((int)FeesType.FeeToDebitSendingPartner);
 
             return schemas;
         }
-        protected override Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet)
+        protected override Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet, CalcInputData inputData)
         {
             FeeData SendingPartnerFee;
             FeeData FeeToDebitSendingPartner;
@@ -75,7 +76,7 @@ namespace FeesService_BLL.Services.FeeCalculator
                     FeeToDebitSendingPartner.Amount = feesSet[(int)FeesType.ClientFee].Amount - SendingPartnerFee!.Amount;
                 }
             }
-            return base.ProcessFeesSet(feesSet);
+            return base.ProcessFeesSet(feesSet, inputData);
         }
     }
 }

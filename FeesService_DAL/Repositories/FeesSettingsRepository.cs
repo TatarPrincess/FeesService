@@ -8,7 +8,7 @@ namespace FeesService_DAL.Repositories;
 
 public class FeesSettingsRepository : BaseRepository, IFeesSettingsRepository
 {
-    public FeesSettingsRepository(DbProviderFactory provider) : base(provider) { }
+    public FeesSettingsRepository(DbProviderFactory provider, String cn) : base(provider, cn) { }
     public IEnumerable<FeesSettings> FindAllByDestination(int destinationId)
     {
         string commandText =
@@ -27,10 +27,10 @@ public class FeesSettingsRepository : BaseRepository, IFeesSettingsRepository
             from [dbo].[FEES_SETTINGS] f (nolock)
             where f.dest_id = @destinationId";
        
-            using (cn = CreateConnection())
+            using (Connection)
             {
-                cn.Open();
-                List<FeesSettings> feesSettings = cn.Query<FeesSettings>(commandText, new { destinationId }).ToList();
+                CreateConnection();                
+                List<FeesSettings> feesSettings = Connection.Query<FeesSettings>(commandText, new { destinationId }).ToList();
                 return feesSettings;
             }         
     }

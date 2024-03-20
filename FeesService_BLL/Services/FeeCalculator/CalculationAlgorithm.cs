@@ -1,22 +1,17 @@
 ﻿using FeesService_BLL.Models;
 using FeesService_BLL.Models.Fees;
+using FeesService_BLL.Services.Interfaces;
 
 namespace FeesService_BLL.Services.FeeCalculator;
 
-public class CalculationAlgorithm
+public class CalculationAlgorithm : ICalculationAlgorithm
 {
-    protected Dictionary<int, FeeData> schemas;
-    protected CalcInputData inputData;  
-    public CalculationAlgorithm(Dictionary<int, FeeData> schemas, CalcInputData inputData)
-    {
-        this.schemas = schemas;
-        this.inputData = inputData;
-    }
-    public virtual Dictionary<int, FeeData> Execute()
+    public CalculationAlgorithm() {}
+    public virtual IDictionary<int, FeeData> Execute(Dictionary<int, FeeData> schemas, CalcInputData inputData)
     {
         return new Dictionary<int, FeeData>();
     }
-    protected virtual Dictionary<int, FeeData> ProcessFeesSettings(Dictionary<int, FeeData> schemas)
+    protected virtual Dictionary<int, FeeData> ProcessFeesSettings(Dictionary<int, FeeData> schemas, CalcInputData inputData)
     {
         if (schemas.ContainsKey((int)FeesType.FeeToDebitSendingPartner) ||
             schemas.ContainsKey((int)FeesType.ReimbursedBrokerFee))
@@ -25,7 +20,7 @@ public class CalculationAlgorithm
         }
         return schemas;
     }
-    protected virtual Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet)
+    protected virtual Dictionary<int, FeeData> ProcessFeesSet(Dictionary<int, FeeData> feesSet, CalcInputData inputData)
     {
         foreach (KeyValuePair <int, FeeData> fee in feesSet.Where(f => f.Value.Amount == 0 && f.Value.Percent > 0))
         {

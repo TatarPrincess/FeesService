@@ -1,31 +1,25 @@
 ﻿
+using FeesService_BLL.Models.Partner;
+using FeesService_BLL.Services.Interfaces;
+
 namespace FeesService_BLL.Services
 {
-    public class ValidationService
-    {
-        private readonly List<IValidator> validators;
-
-        public ValidationService(List<IValidator> validators)
-        {
-            this.validators = validators;
-        }
-
-        public bool Check()
+    public class ValidationService : IValidationService
+    {      
+        public event EventHandler? FeeDestinationsRetrieved;
+      
+        public bool Validate()
         {
             try 
             {
-                foreach (IValidator validator in validators)
-                {
-                    if (validator.Check() == false) return false;
-                }
+                FeeDestinationsRetrieved?.Invoke(this, EventArgs.Empty);
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+               Console.WriteLine($"Exception is caught - {ex}");
                 return false;
-            }
-            
+            }            
         }
     }
 }

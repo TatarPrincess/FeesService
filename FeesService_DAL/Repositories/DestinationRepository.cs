@@ -8,7 +8,7 @@ namespace FeesService_DAL.Repositories;
 
 public class DestinationRepository : BaseRepository, IDestinationRepository
 {
-    public DestinationRepository(DbProviderFactory provider) : base(provider) { }
+    public DestinationRepository(DbProviderFactory provider, String cn) : base(provider, cn) { }
     public IEnumerable<Destination> FindAllBySenderAndReceiver(int sender, int receiver)
     {
         string commandText =
@@ -32,10 +32,10 @@ public class DestinationRepository : BaseRepository, IDestinationRepository
                order by d.priority desc";
 
 
-        using (cn = CreateConnection())
+        using (Connection)
         {
-           cn.Open();
-           List<Destination>  destinations = cn.Query<Destination>(commandText, new { sender, receiver }).ToList();
+           CreateConnection();           
+           List<Destination>  destinations = Connection.Query<Destination>(commandText, new { sender, receiver }).ToList();
            return destinations;
         }
     }

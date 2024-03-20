@@ -8,6 +8,7 @@ public class Partner
     public int CountryId { get; set; } = -1;
     public int State { get; set; } = -1;
     public int Category { get; set; } = -1;
+    public List<PartnerCurrency>? PartnerCurrency { get; set; }
 
     public Partner() { }
 }

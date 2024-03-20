@@ -1,87 +1,43 @@
 ﻿using System.Data;
 using System.Data.Common;
-using Microsoft.Extensions.Configuration;
-
 
 
 namespace FeesService_DAL.Repositories;
 
 public class BaseRepository
 {
-    private readonly DbProviderFactory _provider; /*SqlClientFactory.Instance;*/
-    protected IDbConnection ?cn;
-    bool _disposed = false;
-    public BaseRepository(DbProviderFactory provider)
+    private readonly DbProviderFactory _provider; 
+    protected string _cn;
+    protected IDbConnection? Connection;
+    private bool _disposed = false;
+    public BaseRepository(DbProviderFactory provider, string cn)
     {
+        if (provider is null) throw new NullReferenceException("No provider is passed");
+        if (cn is null) throw new NullReferenceException("No connection string is passed");
         _provider = provider; 
+        _cn = cn;
     }
-    protected IDbConnection CreateConnection()
+    protected void CreateConnection()
     {
-        var connectionString = GetProviderDataFromConfiguration();
-        IDbConnection? connection = _provider.CreateConnection();
+        Connection = _provider.CreateConnection();
 
-        if (connection != null)
+        if (Connection != null)
         {
-            connection.ConnectionString = connectionString;
-            return connection;
+            Connection.ConnectionString = _cn;
+            Connection.Open();
         }
         else throw new Exception();        
     }
-    protected IDbCommand CreateCommand(string commandText, IDbConnection cn) 
+    
+    private void CleanUp()
     {
-        IDbCommand? command = _provider.CreateCommand();
-        if (command != null)
-        {
-            command.Connection = cn;
-            command.CommandText = commandText;
-            return command;
-        }
-        else throw new Exception();
-    }
-
-    protected IDataReader ExecuteCommand(IDbCommand command, bool isSingleRow = false)
-    {
-        if (command.Connection != null)
-        {
-            IDataReader dataReader;
-            dataReader = (isSingleRow) ? command.ExecuteReader(CommandBehavior.SingleRow & CommandBehavior.CloseConnection)
-                                       : command.ExecuteReader(CommandBehavior.CloseConnection);
-            return dataReader;
-        }
-        else throw new Exception();
-    }
-    static string GetProviderDataFromConfiguration()
-    {
-        IConfiguration config = new ConfigurationBuilder()
-        .SetBasePath(@"C:\Store\C#\FeesService\FeesService\FeesService_DAL\Repositories")
-        .AddJsonFile("appsettings.json", true, true)
-        .Build();
-        var providerName = config["ProviderName"];
-
-        if (providerName == "SqlServer")
-        {
-            var cn = config[$"{providerName}:ConnectionString"];
-            return cn ?? "";
-        }
-        else throw new Exception("Invalid data provider value supplied.");
-        
-    }
-    protected virtual void Dispose(bool disposing)
-    {
-        if (_disposed)
-        {
-            return;
-        }
-        if (disposing)
-        {
-            cn?.Dispose();
-        }
+        if (_disposed) return; 
+        if (Connection?.State != 0) Connection?.Close();
         _disposed = true;
     }
     public void Dispose()
     {
-        Dispose(true);
-        GC.SuppressFinalize(this);
+        CleanUp();        
     }
 
 }
